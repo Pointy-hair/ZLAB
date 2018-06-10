@@ -19,7 +19,7 @@ namespace ZLAB
 
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseUrls("0.0.0.0:80","0.0.0.0:5000")
+                .UseUrls("http://0.0.0.0:80","http://0.0.0.0:5000")
                 .UseStartup<Startup>()
                 .Build();
     }
