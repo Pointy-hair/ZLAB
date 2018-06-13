@@ -1,16 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Zlab.DataCore.DbCore\Zlab.DataCore.DbCore.csproj" />
+    <ProjectReference Include="..\Zlab.DataCore\Zlab.DataCore.csproj" />
     <ProjectReference Include="..\Zlab.Web.Main.Model\Zlab.Web.Model.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Implments\" />
-    <Folder Include="Interfaces\" />
   </ItemGroup>
 
 </Project>

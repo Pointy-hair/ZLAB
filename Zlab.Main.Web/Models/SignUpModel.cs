@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Zlab.Main.Web.Models
+{
+    public class SignupModel
+    {
+        public string username { get; set; }
+        public string email { get; set; }
+        public string password { get; set; }
+        public string code { get; set; }
+    }
+
+    public class SigninModel
+    {
+        public string username { get; set; }
+        public string password { get; set; }
+        public string device { get; set; }  
+    }
+}

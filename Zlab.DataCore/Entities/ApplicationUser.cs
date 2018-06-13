@@ -2,29 +2,18 @@
 using System;
 using MongoDB.Driver;
 using Zlab.DataCore.DbCore;
+using System.Collections.Generic;
 
 namespace Zlab.DataCore.Entities
 {
-    public class ApplicationUser : IdentityUser
-    {
+    public class User : Entity
+    { 
         public long CreateTime { get; set; }
-
-    }
-
-    public class ApplicationUserRepository : IDisposable
-    {
-        public ApplicationUserRepository()
-        {
-            Collection = MongoDbHelper.GetDatabase().GetCollection<ApplicationUser>("user");
-        }
-
-        /// <summary>
-        /// mongo collection
-        /// </summary>
-        public IMongoCollection<ApplicationUser> Collection { get; private set; }
-
-        public void Dispose()
-        {
-        }
-    }
+        public string UserName { get; set; }
+        public string Passwords { get; set; }
+        public IList<string> Emails { get; set; }
+        public string Phone { get; set; } 
+        public string CountryCode { get; set; } 
+    } 
+     
 }

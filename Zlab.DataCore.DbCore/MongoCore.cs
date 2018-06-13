@@ -1,5 +1,5 @@
 ﻿using MongoDB.Driver;
-
+using System;
 
 namespace Zlab.DataCore.DbCore
 {
@@ -8,10 +8,11 @@ namespace Zlab.DataCore.DbCore
         public IMongoCollection<T> Collection { get; private set; }
         public MongoCore()
         {
-            var db = MongoDbHelper.GetDatabase();
+            var db = MongoDbHelper.GetDatabase(); 
             Collection = db.GetCollection<T>(typeof(T).Name);
         }
-        
+
+       
     }
     public class MongoDbHelper
     {
@@ -23,7 +24,7 @@ namespace Zlab.DataCore.DbCore
                 Server = new MongoServerAddress("127.0.0.1", 27017),
 
             };
-            var client = new MongoClient(setting);
+            var client = new MongoClient(setting); 
             return client.GetDatabase("zlab");
         } 
     }
