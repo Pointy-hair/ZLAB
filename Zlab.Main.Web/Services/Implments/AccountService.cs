@@ -72,10 +72,12 @@ namespace Zlab.Main.Web.Service.Implments
             var user = await repo.Collection.Find(filters).Project(x => new { x.Id }).FirstOrDefaultAsync();
             if (user != null)
             {
-                var token = await sessionManager.GetSessionAsync(user.Id);
+
                 if (!string.IsNullOrEmpty(model.device))
                     await sessionManager.AddDeviceAsync(user.Id, model.device);
-                return ReturnResult.Success(token);
+                var token = await sessionManager.ReCacheSessionAsync(user.Id);
+                if (!string.IsNullOrEmpty(token))
+                    return ReturnResult.Success(token);
             }
             return ReturnResult.Fail("access denine");
         }

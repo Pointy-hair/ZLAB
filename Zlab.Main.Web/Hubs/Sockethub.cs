@@ -3,17 +3,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using Zlab.DataCore.DbCore;
+using Zlab.Main.Web.Models;
+using Zlab.Main.Web.Services.Implements;
+using Zlab.Main.Web.Services.Interfaces;
 
 namespace Zlab.Main.Web.Hubs
 {
-    public class SocketHub:Hub
-    {  /// <summary>
-       /// 建立连接时触发
-       /// </summary>
-       /// <returns></returns>
+    public class SocketHub : Hub
+    {
+
+        private static SocketHub socket;
+        private readonly ISessionManager sessionManager;
+        public Dictionary<String, List<string>> Users { get; set; }
+
+        public SocketHub() : base()
+        {
+            socket = this;
+            sessionManager = new SessionManager();
+        }
+
+        public static SocketHub GetInstans()
+        {
+            return socket;
+        }
+
+
+        /// <summary>
+        /// 建立连接时触发
+        /// </summary>
+        /// <returns></returns>
         public override async Task OnConnectedAsync()
         {
-
+            var token = Context.Items["token"] as string;
+            if (!string.IsNullOrEmpty(token))
+            {
+                var userid = await sessionManager.GetUserIdAsync(token);
+                var socketid = this.Context.ConnectionId;
+                if (Users.ContainsKey(userid))
+                    Users[userid].Add(socketid);
+                else
+                    Users.Add(userid, new List<string>() { socketid });
+            }
+          
             await Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId} joined");
         }
 
@@ -24,6 +56,14 @@ namespace Zlab.Main.Web.Hubs
         /// <returns></returns>
         public override async Task OnDisconnectedAsync(Exception ex)
         {
+            var socketid = Context.ConnectionId;
+            string userid = Users.First(x => x.Value.Contains(socketid)).Key;
+
+            if (string.IsNullOrEmpty(userid))
+            {
+                if (Users.ContainsKey(userid))
+                    Users[userid].Remove(socketid);
+            }
 
             await Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId} left");
         }
@@ -91,6 +131,21 @@ namespace Zlab.Main.Web.Hubs
 
             await Clients.All.SendAsync("ReceiveMessage", Context.ConnectionId, message);
 
+        }
+
+        private async Task<bool> SetSocketClientAsync(string id, string userid)
+        {
+            var redis = RedisCore.GetClient();
+            return await redis.StringSetAsync($"{Keys.socket_clients_prefix}{id}", userid);
+        }
+
+
+        private async Task<string> GetSocketClientUserIdAsync(string id)
+        {
+            var redis = RedisCore.GetClient();
+            var userid = await redis.StringGetAsync(Keys.socket_clients_prefix);
+
+            return userid;
         }
     }
 }

@@ -13,17 +13,17 @@ namespace Zlab.Main.Web.Services.Implements
     {
         private readonly string key_pre = "sess:";
         private readonly string device_set = "device:";
-        public async Task<string> GetSessionAsync(string userid)
+        public async Task<string> GetUserIdAsync(string token)
         {
             var redis = RedisCore.GetClient();
-            return await redis.StringGetAsync($"{key_pre}{userid}");
+            return await redis.StringGetAsync($"{key_pre}{token}");
         }
 
         public async Task<string> ReCacheSessionAsync(string userid)
         {
             var session = GuidHelper.GetGuid();
             var redis = RedisCore.GetClient();
-            if (await redis.StringSetAsync($"{key_pre}{userid}", session))
+            if (await redis.StringSetAsync($"{key_pre}{session}", userid))
                 return session;
             return string.Empty;
         }
