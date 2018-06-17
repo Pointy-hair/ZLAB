@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
+using MongoDB.Driver;
+using Zlab.DataCore;
 using Zlab.DataCore.DbCore;
+using Zlab.DataCore.Entities;
 using Zlab.Main.Web.Models;
 using Zlab.Main.Web.Services.Implements;
 using Zlab.Main.Web.Services.Interfaces;
@@ -44,9 +47,8 @@ namespace Zlab.Main.Web.Hubs
                     Users[userid].Add(socketid);
                 else
                     Users.Add(userid, new List<string>() { socketid });
+                await PushMessageAsync(userid);
             }
-          
-            await Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId} joined");
         }
 
         /// <summary>
@@ -64,8 +66,7 @@ namespace Zlab.Main.Web.Hubs
                 if (Users.ContainsKey(userid))
                     Users[userid].Remove(socketid);
             }
-
-            await Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId} left");
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -133,19 +134,39 @@ namespace Zlab.Main.Web.Hubs
 
         }
 
-        private async Task<bool> SetSocketClientAsync(string id, string userid)
+        private async Task<List<string>> GetSocketClientIdAsync(string userid)
         {
-            var redis = RedisCore.GetClient();
-            return await redis.StringSetAsync($"{Keys.socket_clients_prefix}{id}", userid);
+            var ids = Users.First(x => x.Key == userid).Value;
+            return await Task.FromResult(ids);
         }
-
-
-        private async Task<string> GetSocketClientUserIdAsync(string id)
+        private async Task PushMessageAsync(string userid)
         {
-            var redis = RedisCore.GetClient();
-            var userid = await redis.StringGetAsync(Keys.socket_clients_prefix);
-
-            return userid;
+            var filter = Builders<Message>.Filter;
+            var filters = filter.AnyEq(x => x.ToUserIds, userid)
+                & filter.Eq(x => x.IsRead, false)
+                & filter.Eq(x => x.IsRealTime, false);
+            var repo = new MongoCore<Message>();
+            var msgids = await repo.Collection.Find(filters).Project(x => x.Id).ToListAsync();
+            var msg = new PushMessage()
+            {
+                type = PushType.MessageId,
+                msgids = msgids
+            };
+            var clientids = await GetSocketClientIdAsync(userid);
+            var clients = Clients.Clients(clientids);
+            await clients.SendAsync("ReceiveMessage", msg.ToJson());
+        }
+        public async Task PushMessageAsync(string userid, string body, PushType type)
+        {
+            var msg = new PushMessage()
+            {
+                type = type,
+                RtcBody = type == PushType.Rtc ? body : string.Empty,
+                msgids = type == PushType.MessageId ? new List<string>() { body } : new List<string>(),
+            };
+            var clientids = await GetSocketClientIdAsync(userid);
+            var clients = Clients.Clients(clientids);
+            await clients.SendAsync("ReceiveMessage", msg.ToJson());
         }
     }
 }

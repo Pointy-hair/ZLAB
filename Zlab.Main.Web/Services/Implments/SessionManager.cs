@@ -27,15 +27,15 @@ namespace Zlab.Main.Web.Services.Implements
                 return session;
             return string.Empty;
         }
-        public async Task<bool> AddDeviceAsync(string userid, string device)
+        public async Task<bool> AddDeviceAsync(string userid, string deviceModel, string deviceName)
         {
             var redis = RedisCore.GetClient();
-            return await redis.SetRemoveAsync($"{device_set}{userid}", device);
+            return await redis.SetRemoveAsync($"{device_set}{userid}", $"{deviceModel},{deviceName}");
         }
-        public async Task<bool> RemoveDeviceAsync(string userid, string device)
+        public async Task<bool> RemoveDeviceAsync(string userid, string deviceModel, string deviceName)
         {
             var redis = RedisCore.GetClient();
-            return await redis.SetAddAsync($"{device_set}{userid}", device);
+            return await redis.SetAddAsync($"{device_set}{userid}", $"{deviceModel},{deviceName}");
         }
     }
 }

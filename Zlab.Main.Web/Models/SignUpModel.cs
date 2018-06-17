@@ -16,6 +16,7 @@ namespace Zlab.Main.Web.Models
     {
         public string username { get; set; }
         public string password { get; set; }
-        public string device { get; set; }  
+        public string devicemodel { get; set; }  
+        public string devicename { get; set; }
     }
 }

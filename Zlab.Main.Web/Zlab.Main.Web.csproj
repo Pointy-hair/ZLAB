@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="WebSocket\" />
     <Folder Include="wwwroot\" />
     <Folder Include="Dtos\" />
   </ItemGroup>
