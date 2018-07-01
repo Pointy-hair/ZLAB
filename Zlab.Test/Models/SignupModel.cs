@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Zlab.Main.Web.Models
+namespace Zlab.Test
 {
     public class SignupModel
     {
@@ -11,10 +11,11 @@ namespace Zlab.Main.Web.Models
         public string password { get; set; }
         public string code { get; set; }
     }
-
     public class SigninModel
     {
         public string username { get; set; }
         public string password { get; set; }
+        public string devicemodel { get; set; }
+        public string devicename { get; set; }
     }
 }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace Zlab.Main.Web.Models
+namespace Zlab.Test.Models
 {
-    public class UserTokenDto
+    public class UserToken
     {
         public string userid { get; set; }
         public string token { get; set; }
+        public string sockettoken { get; set; }
     }
 }

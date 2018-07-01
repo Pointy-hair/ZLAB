@@ -15,6 +15,8 @@ namespace Zlab.Main.Web.Hubs
     public enum PushType
     {
         MessageId=0,
-        Rtc=1, 
+        MessageBack=1,
+        Rtc=10, 
+        HearBeat=100,
     }
 }

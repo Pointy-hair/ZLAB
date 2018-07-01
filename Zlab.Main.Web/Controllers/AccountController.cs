@@ -3,65 +3,73 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Zlab.DataCore;
+using Zlab.Main.Web.Models;
+using Zlab.Main.Web.Service.Interfaces;
 using Zlab.UtilsCore;
-using Zlab.Web.Main.Model.Dtos;
-using Zlab.Web.Main.Model.Models;
-using Zlab.Web.Main.Service.Interfaces;
+
+using System.Collections.Generic;
 
 namespace ZLAB.Controllers
 {
-    public class AccountController : Controller
+    [Route("api/account")]
+    [ApiController]
+    public class AccountController : ControllerBase
     {
         private readonly IAccountService accountService;
-        public AccountController()
-        {
-
-        }
+       // public AccountController(){}
+         
         public AccountController(IAccountService accountService)
         {
             this.accountService = accountService;
         }
-
-        public async Task<HttpResponseMessage> SendEmail(string email) 
+        [HttpGet,Route("email/code")]
+        public async Task<string> SendEmail([FromQuery]string email) 
         {
             try
             {
                 
                 var sent = await accountService.SendEmailAsync(email); 
-                return sent ? ReturnMessage.Success() : ReturnMessage.Fail();
+                var msg= sent ? ReturnResult.Success() : ReturnResult.Fail(); 
+                return msg;
             }
             catch (Exception ex)
             {
                 LogHelper.Error(ex);
-                return ReturnMessage.Fail();
+                return ReturnResult.Fail();
             }
         }
-
-        public async Task<HttpResponseMessage> SignupAsync(SignupModel model) 
+        [HttpPost,Route("signup")]
+        public async Task<string> SignupAsync([FromBody]SignupModel model) 
         { 
             try
             {
-                var dto = await accountService.SignUpAsync(model);
-                return ReturnMessage.Success(dto);
+                var content = await accountService.SignUpAsync(model);
+                return content;
             }
             catch (Exception ex)
             {
                 LogHelper.Error(ex);
-                return ReturnMessage.Fail();
+                return ReturnResult.Fail(ex);
             } 
         }
-        public async Task<HttpResponseMessage> Signin(SignupModel model)
+        [HttpPost, Route("signin")]
+        public async Task<string> Signin([FromBody]SigninModel model)
         {
             try
             {
-                var dto = await accountService.SignUpAsync(model);
-                return ReturnMessage.Success(dto);
+                var content = await accountService.SigninAsync(model);
+                return content;
             }
             catch (Exception ex)
             {
                 LogHelper.Error(ex);
-                return ReturnMessage.Fail();
+                return ReturnResult.Fail();
             }
+        }
+        [HttpGet]
+        public string Get()
+        {
+            return ReturnResult.Success();
         }
     }
 }

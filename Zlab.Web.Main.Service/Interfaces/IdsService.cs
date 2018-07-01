@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Zlab.DataCore.Entities;
 using Zlab.Web.Service.Implments;
 using Zlab.DataCore.DbCore;
@@ -14,8 +11,12 @@ namespace Zlab.Web.Service.Interfaces
         public async Task<int> GetIdAsync(string key)
         {
             var repo = new MongoCore<Ids>();
-            var id = await repo.Collection.FindOneAndUpdateAsync(Builders<Ids>.Filter.Eq(x => x.Key, key), Builders<Ids>.Update.Inc(x => x.Value, 1));
-            return id.Value;
+            var id = await repo.Collection.FindOneAndUpdateAsync(Builders<Ids>.Filter.Eq(x => x.Key, key), Builders<Ids>.Update.Inc(x => x.Value, 1),
+                new FindOneAndUpdateOptions<Ids, Ids>
+                {
+                    ReturnDocument = ReturnDocument.After,
+                });
+            return (id?.Value ?? 0);
         }
     }
 }

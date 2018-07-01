@@ -19,8 +19,8 @@ namespace Zlab.Main.Web.Service.Implments
     {
         private readonly IIdsService idsService;
         private readonly ISessionManager sessionManager;
-        public AccountService() { }
-        public AccountService(IIdsService idsService, ISessionManager sessionManager)
+        // public AccountService() { }
+        public AccountService(ISessionManager sessionManager, IIdsService idsService)
         {
             this.sessionManager = sessionManager;
             this.idsService = idsService;
@@ -31,21 +31,28 @@ namespace Zlab.Main.Web.Service.Implments
             if (model.password.Length < 6)
                 return ReturnResult.Fail("password too simple");
             var redis = RedisCore.GetClient();
-            if (await redis.StringGetAsync("emailcode:" + model.email) != model.code)
+            var code = await redis.StringGetAsync($"emailcode:{model.email}");
+            if (string.IsNullOrEmpty(code))
+                return ReturnResult.Fail("code not exsist");
+            if (code != model.code)
                 return ReturnResult.Fail("code error");
+            if (idsService == null)
+                return ReturnResult.Fail("idservice is null");
+            var userid = await idsService.GetIdAsync("UserId");
             var user = new User
             {
-                UserName = $"{await idsService.GetIdAsync("UserId")}#{model.username}",
+                UserName = model.username,
+                UserId = userid.ToString(),
                 Emails = new List<string>() { model.email },
                 CreateTime = TimeHelper.GetUnixTimeMilliseconds(),
                 Passwords = model.password,
             };
             var repo = new MongoCore<User>();
-            var count = await repo.Collection.CountAsync(Builders<User>.Filter.Eq(x => x.Emails.First(), model.email));
+            var count = await repo.Collection.CountAsync(Builders<User>.Filter.AnyEq(x => x.Emails, model.email));
             if (count > 0)
                 return ReturnResult.Fail("email already registed");
             await repo.Collection.InsertOneAsync(user);
-            return ReturnResult.Success(user.UserName);
+            return ReturnResult.Success(user.UserId);
         }
 
         public async Task<bool> SendEmailAsync(string email)
@@ -56,32 +63,46 @@ namespace Zlab.Main.Web.Service.Implments
             if (sent)
             {
                 var redis = RedisCore.GetClient();
-                redis.StringSet("emailcode:", code, TimeSpan.FromSeconds(10));
+                var seted = await redis.StringSetAsync($"emailcode:{email}", code, TimeSpan.FromMinutes(10));
             }
             return sent;
         }
 
         public async Task<string> SigninAsync(SigninModel model)
         {
+            var username = string.Empty;
+            var userid = string.Empty;
+
+            if (model.username.Contains('#'))
+            {
+                var account = model.username.Split('#');
+                if (account.Length == 2)
+                {
+                    username = account[0] ?? string.Empty;
+                    userid = account[1] ?? string.Empty;
+                }
+            }
+
             var filter = Builders<User>.Filter;
             var filters = filter.Eq(x => x.Passwords, model.password) &
                 (filter.AnyEq(x => x.Emails, model.username)
                 | filter.Eq(x => x.Phone, model.username)
-                | filter.Eq(x => x.UserName, model.username));
+                | (filter.Eq(x => x.UserName, username) & filter.Eq(x => x.UserId, userid)));
             var repo = new MongoCore<User>();
-            var user = await repo.Collection.Find(filters).Project(x => new { x.Id }).FirstOrDefaultAsync();
-            if (user != null)
+            var _id = await repo.Collection.Find(filters).Project(x => x.Id).FirstOrDefaultAsync();
+            if (!string.IsNullOrEmpty(_id))
             {
-
-                if (!string.IsNullOrEmpty(model.device))
-                    await sessionManager.AddDeviceAsync(user.Id, model.devicemodel, model.devicename);
-                var token = await sessionManager.ReCacheSessionAsync(user.Id);
+                var token = await sessionManager.ReCacheSessionAsync(_id);
                 if (!string.IsNullOrEmpty(token))
-                    return ReturnResult.Success(token);
+                    return ReturnResult.Success(new UserTokenDto
+                    {
+                        token = token,
+                        userid = _id
+                    });
             }
             return ReturnResult.Fail("access denine");
         }
 
-        
+
     }
 }

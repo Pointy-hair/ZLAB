@@ -14,7 +14,7 @@ namespace Zlab.UtilsCore
             msg.To.Add(email);  
             msg.From = new MailAddress("yixinin@outlook.com", "Zlab", Encoding.UTF8);
             /* 上面3个参数分别是发件人地址（可以随便写），发件人姓名，编码*/
-            msg.Subject = "这是测试邮件";//邮件标题   
+            msg.Subject = "Zlab Registry Code";//邮件标题   
             msg.SubjectEncoding = Encoding.UTF8;//邮件标题编码   
             msg.Body = body;//邮件内容   
             msg.BodyEncoding = Encoding.UTF8;//邮件内容编码   

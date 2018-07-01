@@ -54,6 +54,16 @@ namespace Zlab.DataCore
             };
             return dto.ToJson();
         }
+        public static string Fail<T>(T data) where T : new()
+        {
+            var dto = new
+            {
+                code = failcode,
+                msg = failstring,
+                data
+            };
+            return dto.ToJson();
+        }
         public static string Fail(string msg)
         {
             var dto = new
@@ -64,6 +74,12 @@ namespace Zlab.DataCore
             };
             return dto.ToJson();
         }
+    }
+    public class ReturnResult<T>
+    {
+        public string code { get; set; }
+        public string msg { get; set; }
+        public T data { get; set; }
     }
 
     public class ReturnMessage
@@ -94,16 +110,18 @@ namespace Zlab.DataCore
         }
         public static HttpResponseMessage Success<T>(T data) where T : new()
         {
+            var content = ReturnResult.Success(data);
             return new HttpResponseMessage
             {
-                Content = new StringContent(ReturnResult.Success(data), Encoding.UTF8, json),
+                Content = new StringContent(content, Encoding.UTF8, json),
             };
         }
         public static HttpResponseMessage Success()
         {
+            var content = ReturnResult.Success();
             return new HttpResponseMessage
             {
-                Content = new StringContent(ReturnResult.Success(), Encoding.UTF8, json),
+                Content = new StringContent(content, Encoding.UTF8, json),
             };
         }
     }

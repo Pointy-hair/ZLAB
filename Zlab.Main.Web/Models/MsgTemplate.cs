@@ -5,9 +5,12 @@ using System.Threading.Tasks;
 
 namespace Zlab.Main.Web.Models
 {
-    public class UserTokenDto
-    {
-        public string userid { get; set; }
-        public string token { get; set; }
+    public class RTCMessage
+    { 
+        public string uid { get; set; } 
+        public string msg { get; set; }
     }
+
+    
+
 }

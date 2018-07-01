@@ -12,23 +12,19 @@ namespace Zlab.DataCore.Entities
         public IList<string> AtUserIds { get; set; }
         public MessageType Type { get; set; }
         public MessageGroup Group { get; set; }
-        public long CreateTime { get; set; }
-        public bool IsRead { get; set; } 
-        public bool IsRealTime { get; set; }
+        public long CreateTime { get; set; }  
     }
     public enum MessageType
     {
         text = 0,
         audio = 1,
-        video = 2,
-        rtc = 3,
+        video = 2, 
         share = 4
     }
     public enum MessageGroup
     {
         Personal=0,
         Channel = 1, 
-        Notify=2,
-
+        Notify=2, 
     }
 }
