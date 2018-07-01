@@ -15,15 +15,15 @@ namespace Zlab.Test
         static void Main(string[] args)
         {
             var usertoken = Login().GetAwaiter().GetResult();
-            ConnectHubs(usertoken.sockettoken,usertoken.userid, usertoken.token).Wait();
+            ConnectHubs(usertoken.sockettoken, "5b3894d039e68b614c8379f6", usertoken.token).Wait();
             Console.ReadLine();
         }
-        static async Task ConnectHubs(string token, string userid, string token2)
+        static async Task ConnectHubs(string url, string userid, string token)
         {
             //var token = "10d33bc4a2d54b4997facc76e9485ede";
 
             var connection = new HubConnectionBuilder()
-            .WithUrl($"http://zlab.yixinin.xyz/websocket?token={token}")
+            .WithUrl(url)
             .Build();
             connection.Closed += Connection_Closed;
 
@@ -51,7 +51,8 @@ namespace Zlab.Test
                 System.Timers.Timer t2 = new System.Timers.Timer(3000);
                 t2.Elapsed += new System.Timers.ElapsedEventHandler(async (object source, System.Timers.ElapsedEventArgs e) =>
                  {
-                     await SendMessage(userid, "hello there", token2);
+                     
+                        await SendMessage(userid, "hello there", token);
                  });
                 t2.AutoReset = false;//设置是执行一次（false）还是一直执行(true)；
                 t2.Enabled = true;//是否执行System.Timers.Timer.Elapsed事件；
@@ -116,7 +117,7 @@ namespace Zlab.Test
             var body = new SigninModel()
             {
                 password = "www999799",
-                username = "yixinin@outlook.com",
+                username = "990824559@qq.com",
             };
 
             var sign = await HttpHelper.PostAsync(signup_url, body.ToJson());
@@ -129,7 +130,7 @@ namespace Zlab.Test
             return new UserToken
             {
                 userid = usertoken.data.userid,
-                sockettoken = sockettoken.msg,
+                sockettoken = sockettoken.data,
                 token = usertoken.data.token
             };
         }

@@ -39,8 +39,8 @@ namespace Zlab.DataCore
             var dto = new
             {
                 code = successcode,
-                msg,
-                data = ""
+                msg=successstring,
+                data = msg
             };
             return dto.ToJson();
         }
@@ -69,8 +69,8 @@ namespace Zlab.DataCore
             var dto = new
             {
                 code = failcode,
-                msg,
-                data = ""
+                msg=failstring,
+                data = msg
             };
             return dto.ToJson();
         }

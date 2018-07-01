@@ -21,13 +21,16 @@
         </Grid.ColumnDefinitions>
         <Grid Grid.Column="1" Grid.Row="1" >
             <StackPanel  Visibility="{x:Bind  Path=VM.Email_Panel_Visibility, Mode=OneWay}">
-                <TextBox PlaceholderText="email" Text="{x:Bind Path=VM.Email, Mode=TwoWay}"/> 
-                <Button x:Name="EmailBtn" Content="Send" Click="EmailBtn_Click"/>
-            </StackPanel>
+                <TextBox PlaceholderText="email" Text="{x:Bind Path=VM.Email, Mode=TwoWay}"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button x:Name="EmailBtn" Content="Send" Click="EmailBtn_Click"/>
+                    <Button x:Name="LoginViewBtn" Content="Login" Click="LoginViewBtn_Click" />
+                </StackPanel>
+                </StackPanel>
             <StackPanel  Visibility="{x:Bind  Path=VM.Signup_Panel_Visibility, Mode=OneWay}">
                 <TextBox PlaceholderText="username" Text="{x:Bind Path=VM.UserName, Mode=TwoWay}"/>
                 <PasswordBox PlaceholderText="password" Password="{x:Bind Path=VM.Password, Mode=TwoWay}"/>
-                <TextBox PlaceholderText="Code"/>
+                <TextBox PlaceholderText="Code" Text="{x:Bind VM.Code, Mode=TwoWay}"/>
                 <Button x:Name="SignupBtn" Click="SignupBtn_Click" Content="SignUp"/>
             </StackPanel>
             <StackPanel  Visibility="{x:Bind  Path=VM.Login_Panel_Visibility, Mode=OneWay}">

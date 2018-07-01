@@ -8,5 +8,6 @@ namespace Zlab.Web.Service.Implments
     public interface IIdsService
     {
         Task<int> GetIdAsync(string key);
+        Task SetIdAsync(string key, int value);
     }
 }

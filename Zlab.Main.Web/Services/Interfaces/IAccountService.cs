@@ -8,5 +8,6 @@ namespace Zlab.Main.Web.Service.Interfaces
         Task<string> SignUpAsync(SignupModel model);
         Task<string> SigninAsync(SigninModel model);
         Task<bool> SendEmailAsync(string email);
+        Task<string> DefaultIdAsync(string key, int value);
     }
 }

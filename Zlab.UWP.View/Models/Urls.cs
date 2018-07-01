@@ -17,11 +17,13 @@ namespace Zlab.UWP.View.Models
 
         #endregion
 
-        #region
+        #region Message
 
         public static readonly string SendMessage = UrlPrefix + "/api/msg/sendmsg";
         public static readonly string GetSocketUrl = UrlPrefix + "/api/msg/socketurl";
-        public static readonly string ReadMessage = UrlPrefix + "/api/msg/read";
+        public static readonly string ReadMessage = UrlPrefix + "/api/msg/read"; 
+            public static readonly string GetMessage = UrlPrefix + "/api/msg/getmsgs";
+        public static readonly string SocketUrl = "http://zlab.yixinin.xyz/websocket";
 
         #endregion
     }

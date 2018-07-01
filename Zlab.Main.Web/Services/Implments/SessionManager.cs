@@ -55,7 +55,7 @@ namespace Zlab.Main.Web.Services.Implements
             return await redis.SetAddAsync($"{device_set}{userid}", $"{deviceModel},{deviceName}");
         }
 
-        public async Task<bool> CheckeUserAsync(string userid, string token)
+        public async Task<bool> CheckUserAsync(string userid, string token)
         {
             var sess = await GetSocketUserIdAsync(token);
             return sess == userid;

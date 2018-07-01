@@ -31,7 +31,7 @@ namespace Zlab.Main.Web.Hubs
         public override async Task OnConnectedAsync()
         {
             var socketid = this.Context.ConnectionId;
-            var clinet = Clients.Client(Context.ConnectionId);
+            //var clinet = Clients.Client(Context.ConnectionId);
 
             string token = Context.GetHttpContext().Request.Query["token"];
             if (!string.IsNullOrEmpty(token))
@@ -43,7 +43,7 @@ namespace Zlab.Main.Web.Hubs
                         Users[userid].Add(socketid);
                     else
                         Users.TryAdd(userid, new List<string>() { socketid });
-                    await PushMessageAsync(userid);
+                    await PushMessageAsync(userid, Clients.Caller);
                 }
                 else
                 {
@@ -127,44 +127,29 @@ namespace Zlab.Main.Web.Hubs
 
             return await Task.FromResult(ids);
         }
-        private async Task PushMessageAsync(string userid)
+        private async Task PushMessageAsync(string userid, IClientProxy client)
         {
             var filter = Builders<UserMessage>.Filter;
             var filters = filter.Eq(x => x.UserId, userid)
                 & filter.Eq(x => x.Read, false);
             var repo = new MongoCore<UserMessage>();
             var msgids = await repo.Collection.Find(filters).Project(x => x.MessageId).ToListAsync();
-            if(msgids!=null && msgids.Any())
+            if (msgids != null && msgids.Any())
             {
                 var msg = new PushMessage()
                 {
                     type = PushType.MessageId,
                     msgids = msgids
-                };
-                var clientids = await GetSocketClientIdAsync(userid);
-                if (clientids != null && clientids.Any())
+                }; 
+                try
                 {
-                    var removeids = new List<string>();
-                    foreach (var clientid in clientids)
-                    {
-                        try
-                        {
-                            var client = Clients.Client(clientid);
-                            client.SendAsync("ReceiveMessage", msg.ToJson());
-                        }
-                        catch (Exception)
-                        {
-                            removeids.Add(clientid);
-                        }
-                    }
-                    foreach (var clientid in removeids)
-                    {
-                        //if (Users.ContainsKey(userid))
-                        //    Users[userid].Remove(clientid);
-                        //clientids.Remove(clientid);
-                    }
+                    client.SendAsync("ReceiveMessage", msg.ToJson());
                 }
-            } 
+                catch (Exception)
+                {
+
+                } 
+            }
         }
         public async Task<List<string>> PushMessageAsync(string userid, string body, PushType type)
         {

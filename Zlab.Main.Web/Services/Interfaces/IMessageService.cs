@@ -13,5 +13,6 @@ namespace Zlab.Main.Web.Services.Interfaces
         Task<string> SendMessageAsync(SendMsgModel model, IHubContext<SocketHub> hubContext);
         Task<string> GetMessagesAsync(string[] msgid);
         Task<string> GetWebSocketUrlAsync(UserTokenDto model);
+        Task<string> GetMessagesAsync(string userid);
     }
 }

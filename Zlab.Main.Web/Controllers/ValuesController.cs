@@ -1,5 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Zlab.DataCore;
+using Zlab.UtilsCore;
+using Zlab.Web.Service.Implments;
+using Zlab.Web.Service.Interfaces;
 
 namespace Zlab.Main.Web.Controllers
 {
@@ -7,40 +13,37 @@ namespace Zlab.Main.Web.Controllers
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        public ValuesController()
+        private readonly IIdsService idService;
+        public ValuesController(IIdsService idsService)
         {
-
+            this.idService = idsService;
         }
         // GET api/values
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public async Task<ActionResult<string>> Get(string key, int value, string token)
         {
-            return new string[] { "value1", "value2" };
+            try
+            {
+                if (token == "token-zlab-yixin")
+                {
+                    await idService.SetIdAsync(key, value);
+                    return ReturnResult.Success();
+                }
+
+                else
+                {
+                    LogHelper.Log("token error");
+                    return ReturnResult.Fail();
+                }
+                   
+            }
+           catch(Exception ex)
+            {
+                LogHelper.Error(ex);
+                return ReturnResult.Fail("error");
+            }
         }
 
-        // GET api/values/5
-        [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            return "value";
-        }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/values/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
     }
 }

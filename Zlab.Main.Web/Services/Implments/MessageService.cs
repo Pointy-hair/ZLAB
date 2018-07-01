@@ -56,20 +56,21 @@ namespace Zlab.Main.Web.Services.Implements
             var repo = new MongoCore<Message>();
             var usermsgrepo = new MongoCore<UserMessage>();
             await repo.Collection.InsertOneAsync(msg);
+
             await usermsgrepo.Collection.InsertManyAsync(usermsgs);
             var body = new PushMessage()
             {
                 msgids = new List<string>() { msg.Id },
                 type = PushType.MessageId
             };
-            var sockets = ChatWebSocketMiddleware._sockets.Where(x => model.touserids.Contains(x.Key)).ToList();
-            if (sockets != null && sockets.Any())
-            {
-                foreach (var sock in sockets)
-                {
-                    await ChatWebSocketMiddleware.SendStringAsync(sock.Value, body.ToJson());
-                }
-            }
+            //var sockets = ChatWebSocketMiddleware._sockets.Where(x => model.touserids.Contains(x.Key)).ToList();
+            //if (sockets != null && sockets.Any())
+            //{
+            //    foreach (var sock in sockets)
+            //    {
+            //        await ChatWebSocketMiddleware.SendStringAsync(sock.Value, body.ToJson());
+            //    }
+            //}
             var sents = new List<string>();
             var users = SocketHub.Users.Where(x => model.touserids.Contains(x.Key)).ToList();
             if (users != null && users.Any())
@@ -101,23 +102,35 @@ namespace Zlab.Main.Web.Services.Implements
             }
             return ReturnResult.Success(sents);
         }
-        public async Task<string> GetMessagesAsync(string[] msgid)
+        public async Task<string> GetMessagesAsync(string[] msgids)
         {
-            var filter = Builders<Message>.Filter.In(x => x.Id, msgid);
+            var filter = Builders<Message>.Filter.In(x => x.Id, msgids);
             var repo = new MongoCore<Message>();
             var msg = await repo.Collection.Find(filter).Project(x => new UserMessageDto
             {
-                AtUserIds = x.AtUserIds,
-                Body = x.Body,
-                CreateTime = x.CreateTime,
-                Group = x.Group,
-                Id = x.Id,
-                ImagePaths = x.ImagePaths,
-                Sender = x.Sender,
-                ToUserIds = x.ToUserIds,
-                Type = x.Type
+                atuserids = x.AtUserIds,
+                body = x.Body,
+                createtime = x.CreateTime,
+                group = x.Group,
+                id = x.Id,
+                imagepaths = x.ImagePaths,
+                sender = x.Sender,
+                type = x.Type
             }).ToListAsync();
+            var usermsgrepo = new MongoCore<UserMessage>();
+            await usermsgrepo.Collection.UpdateManyAsync(Builders<UserMessage>.Filter.In(x => x.MessageId, msgids), Builders<UserMessage>.Update.Set(x => x.Read, true));
             return ReturnResult.Success(msg);
+        }
+        public async Task<string> GetMessagesAsync(string userid)
+        {
+            var filter = Builders<UserMessage>.Filter.Eq(x => x.Read, false) & Builders<UserMessage>.Filter.Eq(x => x.UserId, userid);
+            var repo = new MongoCore<UserMessage>();
+            var msgids = await repo.Collection.Find(filter).Project(x => x.MessageId).ToListAsync();
+            if (msgids != null && msgids.Any())
+            {
+                return await GetMessagesAsync(msgids.ToArray());
+            }
+            return ReturnResult.Fail("no msgs");
         }
         public async Task<string> SetMessagesReadAsync(string[] msgid)
         {
@@ -151,10 +164,10 @@ namespace Zlab.Main.Web.Services.Implements
             var filters = filter.Eq(x => x.Id, msgid)
                 & filter.Lt(x => x.CreateTime, DateTimeOffset.UtcNow.AddMinutes(-3).ToUnixTimeMilliseconds());
             var repo = new MongoCore<Message>();
-           
+
             var userids = await repo.Collection.Find(filters).Project(x => x.ToUserIds).FirstOrDefaultAsync();
 
-           
+
             var body = new PushMessage
             {
                 msgids = new List<string>() { msgid },

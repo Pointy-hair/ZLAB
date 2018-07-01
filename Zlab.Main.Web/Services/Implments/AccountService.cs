@@ -103,6 +103,10 @@ namespace Zlab.Main.Web.Service.Implments
             return ReturnResult.Fail("access denine");
         }
 
-
+        public async Task<string> DefaultIdAsync(string key, int value)
+        {
+            await idsService.SetIdAsync(key,value);
+            return ReturnResult.Success();
+        }
     }
 }

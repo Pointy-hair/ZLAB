@@ -13,6 +13,7 @@ namespace Zlab.DataCore.Entities
         public MessageType Type { get; set; }
         public MessageGroup Group { get; set; }
         public long CreateTime { get; set; }  
+        public string ToChannelId { get; set; } 
     }
     public enum MessageType
     {

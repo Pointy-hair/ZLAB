@@ -13,6 +13,6 @@ namespace Zlab.Main.Web.Services.Interfaces
         Task<bool> RemoveDeviceAsync(string userid, string deviceModel, string deviceName);
         Task<string> GetSocketUserIdAsync(string token);
         Task<string> ReCacheSocketSessionAsync(string userid);
-        Task<bool> CheckeUserAsync(string userid, string token);
+        Task<bool> CheckUserAsync(string userid, string token);
     }
 }

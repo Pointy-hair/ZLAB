@@ -81,6 +81,7 @@ namespace Zlab.Main.Web
             app.UseSignalR(routes =>
             {
                 routes.MapHub<SocketHub>("/websocket");
+                
             });
             app.UseMvc();
         }

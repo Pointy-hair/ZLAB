@@ -17,10 +17,12 @@ namespace Zlab.Web.Main.Services.Interfaces
     public class MessageController : ControllerBase
     {
         private readonly IMessageService messageService;
+        private readonly ISessionManager sessionManager;
         // public MessageController() { }
         private readonly IHubContext<SocketHub> hubContext;
-        public MessageController(IMessageService messageService, IHubContext<SocketHub> hubContext)
+        public MessageController(IMessageService messageService, IHubContext<SocketHub> hubContext, ISessionManager sessionManager)
         {
+            this.sessionManager = sessionManager;
             this.messageService = messageService;
             this.hubContext = hubContext;
         }
@@ -29,6 +31,8 @@ namespace Zlab.Web.Main.Services.Interfaces
         {
             try
             {
+                if (await sessionManager.CheckUserAsync(model.userid, model.token))
+                    return ReturnResult.Fail("access denied");
                 var content = await messageService.SendMessageAsync(model, hubContext);
                 return content;
             }
@@ -40,11 +44,13 @@ namespace Zlab.Web.Main.Services.Interfaces
 
         }
         [HttpPost, Route("getmsgs")]
-        public async Task<string> GetMessage([FromBody]string[] msgids)
+        public async Task<string> GetMessage([FromBody]GetMsgModel model)
         {
             try
             {
-                var content = await messageService.GetMessagesAsync(msgids);
+                if (await sessionManager.CheckUserAsync(model.userid, model.token))
+                    return ReturnResult.Fail("access denied");
+                var content = await messageService.GetMessagesAsync(model.msgids);
                 return content;
             }
             catch (Exception ex)
@@ -54,8 +60,24 @@ namespace Zlab.Web.Main.Services.Interfaces
             return ReturnResult.Fail();
         }
 
+        [HttpGet, Route("getmsgs")]
+        public async Task<string> GetMessage([FromQuery] UserToken model)
+        {
+            try
+            {
+                if (await sessionManager.CheckUserAsync(model.userid, model.token))
+                    return ReturnResult.Fail("access denied");
+                var content = await messageService.GetMessagesAsync(model.userid);
+                return content;
+            }
+            catch (Exception ex)
+            {
+                LogHelper.Error(ex);
+            }
+            return ReturnResult.Fail();
+        }
         [HttpGet, Route("socketurl")]
-        public async Task<string> GetSockteUrl([FromQuery]UserTokenDto model)
+        public async Task<string> GetWebSockteUrl([FromQuery]UserTokenDto model)
         {
             try
             {
@@ -69,11 +91,6 @@ namespace Zlab.Web.Main.Services.Interfaces
                 LogHelper.Error(ex);
                 return ReturnResult.Fail(ex);
             }
-        }
-        [HttpGet]
-        public string Get()
-        {
-            return "msg";
-        }
+        } 
     }
 }

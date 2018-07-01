@@ -36,19 +36,25 @@ namespace Zlab.UWP.View.Views
         }
         
 
-        private void EmailBtn_Click(object sender, RoutedEventArgs e)
+        private async void EmailBtn_Click(object sender, RoutedEventArgs e)
         {
-            VM.SendEmailCodeAsync();
+            await VM.SendEmailCodeAsync();
         }
 
-        private void SignupBtn_Click(object sender, RoutedEventArgs e)
+        private async void SignupBtn_Click(object sender, RoutedEventArgs e)
         {
-
+            await VM.SignUpAsync();
         }
 
-        private void LoginBtn_Click(object sender, RoutedEventArgs e)
+        private async void LoginBtn_Click(object sender, RoutedEventArgs e)
         {
+            await VM.LoginAsync(Dispatcher);
+            Frame.Navigate(typeof(MessagePage));
+        }
 
+        private void LoginViewBtn_Click(object sender, RoutedEventArgs e)
+        {
+            VM.ShowLogin();
         }
     }
 }

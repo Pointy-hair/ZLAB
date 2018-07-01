@@ -15,8 +15,20 @@ namespace Zlab.Web.Service.Interfaces
                 new FindOneAndUpdateOptions<Ids, Ids>
                 {
                     ReturnDocument = ReturnDocument.After,
+                    IsUpsert = true
                 });
             return (id?.Value ?? 0);
+        }
+        public async Task SetIdAsync(string key, int value)
+        {
+            var repo = new MongoCore<Ids>();
+            var filter = Builders<Ids>.Filter.Eq(x => x.Key, key);
+            var update = Builders<Ids>.Update.Set(x => x.Value, value);
+            if (await repo.Collection.CountAsync(filter) < 1)
+                await repo.Collection.UpdateOneAsync(filter, update,new UpdateOptions
+                {
+                    IsUpsert=true, 
+                });
         }
     }
 }
