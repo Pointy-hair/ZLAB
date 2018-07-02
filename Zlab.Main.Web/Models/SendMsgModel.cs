@@ -8,7 +8,7 @@ namespace Zlab.Main.Web.Models
 {
     public class SendMsgModel:UserToken
     {
-        public List<string> touserids { get; set; }
+        public string touserid { get; set; }
         public string tochannelid { get; set; }  
         public string message { get; set; }
         public MessageType type { get; set; }

@@ -45,7 +45,7 @@ namespace Zlab.Main.Web.Service.Implments
                 UserId = userid.ToString(),
                 Emails = new List<string>() { model.email },
                 CreateTime = TimeHelper.GetUnixTimeMilliseconds(),
-                Passwords = model.password,
+                Password = model.password,
             };
             var repo = new MongoCore<User>();
             var count = await repo.Collection.CountAsync(Builders<User>.Filter.AnyEq(x => x.Emails, model.email));
@@ -84,7 +84,7 @@ namespace Zlab.Main.Web.Service.Implments
             }
 
             var filter = Builders<User>.Filter;
-            var filters = filter.Eq(x => x.Passwords, model.password) &
+            var filters = filter.Eq(x => x.Password, model.password) &
                 (filter.AnyEq(x => x.Emails, model.username)
                 | filter.Eq(x => x.Phone, model.username)
                 | (filter.Eq(x => x.UserName, username) & filter.Eq(x => x.UserId, userid)));

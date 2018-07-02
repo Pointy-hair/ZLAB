@@ -14,5 +14,7 @@ namespace Zlab.Main.Web.Services.Interfaces
         Task<string> GetSocketUserIdAsync(string token);
         Task<string> ReCacheSocketSessionAsync(string userid);
         Task<bool> CheckUserAsync(string userid, string token);
+        Task<string> CacheInviteTokenAsync(string channelid);
+        Task<string> GetChannelIdByTokenAsync(string invitetoken);
     }
 }

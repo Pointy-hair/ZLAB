@@ -10,13 +10,16 @@ namespace Zlab.Main.Web.Hubs
         public PushType type { get; set; }
         public List<string> msgids { get; set; }
         public string RtcBody { get; set; } 
+        public string invite { get; set; }
 
     }
     public enum PushType
     {
         MessageId=0,
         MessageBack=1,
-        Rtc=10, 
+        ChannelInvite = 2,
+        Rtc =10, 
         HearBeat=100,
+       
     }
 }

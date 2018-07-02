@@ -14,6 +14,7 @@ namespace Zlab.Main.Web.Services.Implements
     {
         private readonly string key_pre = "sess:";
         private readonly string device_set = "device:";
+        private readonly string invite_pre = "invite:";
         public async Task<string> GetUserIdAsync(string token)
         {
             var redis = RedisCore.GetClient();
@@ -59,6 +60,24 @@ namespace Zlab.Main.Web.Services.Implements
         {
             var sess = await GetSocketUserIdAsync(token);
             return sess == userid;
+        }
+
+        public async Task<string> CacheInviteTokenAsync(string channelid)
+        {
+            var token = GuidHelper.GetGuid();
+            var key = $"{invite_pre}{token}";
+            var redis = RedisCore.GetClient();
+            var seted = await redis.StringSetAsync(key, channelid);
+            return seted ? token : string.Empty ;
+        }
+
+        public async Task<string> GetChannelIdByTokenAsync(string invitetoken)
+        {
+            var token = GuidHelper.GetGuid();
+            var key = $"{invite_pre}{invitetoken}";
+            var redis = RedisCore.GetClient();
+            var channelid = await redis.StringGetAsync(key);
+            return channelid;
         }
     }
 }

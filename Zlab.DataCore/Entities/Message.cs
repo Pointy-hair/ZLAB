@@ -5,15 +5,16 @@ namespace Zlab.DataCore.Entities
 {
     public class Message : Entity
     {
-        public string Sender { get; set; }
-        public IList<string> ToUserIds { get; set; }
+        public string UserId { get; set; }
+        public string ToUserId { get; set; }
+        public string ToChannelId { get; set; }
         public string Body { get; set; }
         public IList<string> ImagePaths { get; set; }
         public IList<string> AtUserIds { get; set; }
         public MessageType Type { get; set; }
         public MessageGroup Group { get; set; }
         public long CreateTime { get; set; }  
-        public string ToChannelId { get; set; } 
+        
     }
     public enum MessageType
     {

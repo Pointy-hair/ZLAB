@@ -18,8 +18,8 @@ namespace Zlab.Main.Web.Hubs
     public class SocketHub : Hub
     {
         private readonly ISessionManager sessionManager;
-        public static ConcurrentDictionary<String, List<string>> Users = new ConcurrentDictionary<string, List<string>>();
-
+        public static ConcurrentDictionary<string, List<string>> Users = new ConcurrentDictionary<string, List<string>>();
+        public static ConcurrentDictionary<string, List<string>> Channels = new ConcurrentDictionary<string, List<string>>();
         public SocketHub() : base()
         {
             sessionManager = new SessionManager();
@@ -43,7 +43,17 @@ namespace Zlab.Main.Web.Hubs
                         Users[userid].Add(socketid);
                     else
                         Users.TryAdd(userid, new List<string>() { socketid });
-                    await PushMessageAsync(userid, Clients.Caller);
+
+                    var channelids = await GetUserChannelIdsAsync(userid);
+                    if (channelids != null && channelids.Any())
+                    {
+                        foreach (var channelid in channelids)
+                        {
+                            await Groups.AddToGroupAsync(Context.ConnectionId, channelid);
+                        }
+                    }
+
+                    //await PushMessageAsync(userid, Clients.Caller);
                 }
                 else
                 {
@@ -73,19 +83,18 @@ namespace Zlab.Main.Web.Hubs
             {
                 if (Users.ContainsKey(userid))
                     Users[userid].Remove(socketid);
+                var channelids = await GetUserChannelIdsAsync(userid);
+                if (channelids != null && channelids.Any())
+                {
+                    foreach (var channelid in channelids)
+                    {
+                        await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelid);
+                    }
+                }
             }
             await Task.CompletedTask;
         }
 
-        /// <summary>
-        /// 向所有人推送消息
-        /// </summary>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public Task Send(string message)
-        {
-            return Clients.All.SendAsync("ReceiveMessage", $"{Context.ConnectionId}: {message}");
-        }
         /// <summary>
         /// 向指定组推送消息
         /// </summary>
@@ -104,9 +113,10 @@ namespace Zlab.Main.Web.Hubs
         public async Task JoinGroup(string groupName)
         {
 
+
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
 
-            await Clients.Group(groupName).SendAsync("ReceiveMessage", $"{Context.ConnectionId} joined {groupName}");
+            //await Clients.Group(groupName).SendAsync("ReceiveMessage", $"{Context.ConnectionId} joined {groupName}");
         }
         /// <summary>
         /// 推出指定组并向组推送消息
@@ -127,6 +137,15 @@ namespace Zlab.Main.Web.Hubs
 
             return await Task.FromResult(ids);
         }
+
+        private async Task<IList<string>> GetUserChannelIdsAsync(string userid)
+        {
+            var filter = Builders<User>.Filter.Eq(x => x.Id, userid);
+            var repo = new MongoCore<User>();
+            var channelids = await repo.Collection.Find(filter).Project(x => x.ChannelIds).FirstOrDefaultAsync();
+            return channelids;
+        }
+
         private async Task PushMessageAsync(string userid, IClientProxy client)
         {
             var filter = Builders<UserMessage>.Filter;
@@ -140,7 +159,7 @@ namespace Zlab.Main.Web.Hubs
                 {
                     type = PushType.MessageId,
                     msgids = msgids
-                }; 
+                };
                 try
                 {
                     client.SendAsync("ReceiveMessage", msg.ToJson());
@@ -148,7 +167,7 @@ namespace Zlab.Main.Web.Hubs
                 catch (Exception)
                 {
 
-                } 
+                }
             }
         }
         public async Task<List<string>> PushMessageAsync(string userid, string body, PushType type)

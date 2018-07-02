@@ -9,5 +9,9 @@ namespace Zlab.DataCore.Entities
     {
         public string ChannelName { get; set; } 
         public IList<string> UserIds { get; set; }
-    }
+        public string Owner { get; set; }
+        public long CreateTime { get; set; }
+        public bool IsPrivate{ get; set; } 
+        public string Purpose { get; set; } 
+    } 
 }
